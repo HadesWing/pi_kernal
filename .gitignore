@@ -1,0 +1,10 @@
+# 产物与超大文件（可由配置+脚本重新生成，不入库）
+os.img
+linux/
+*.tgz
+*.tar.gz
+
+# 运行时临时文件
+*.tmp
+dp.txt
+dp2.txt

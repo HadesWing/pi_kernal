@@ -1,0 +1,6 @@
+*.sh text eol=lf
+*.py text eol=lf
+*.ps1 text eol=crlf
+meta-data text eol=lf
+network-config text eol=lf
+user-data text eol=lf
