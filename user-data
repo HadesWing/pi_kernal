@@ -1,0 +1,38 @@
+#cloud-config
+# 树莓派首启配置（cloud-init 读取，位置：启动分区根目录 user-data）
+# 作用：建 pi 用户、注入本机公钥（免密 SSH 登录）、开 SSH、给免密 sudo、设主机名
+
+hostname: pi-lab
+manage_etc_hosts: true
+preserve_hostname: false
+
+users:
+  - name: pi
+    gecos: Pi Lab
+    shell: /bin/bash
+    groups: [adm, dialout, cdrom, sudo, audio, video, plugdev, games, users, input, netdev, gpio, i2c, spi]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDC4dyLKjaIiPyvOTIkbOkjdDTgh3Mj1nGzhQRlCxYOwIl8YPomGRtEyHSUCbEM03K/6YIxB7QBgyFBl/qRKm6CpBdOwUZhwtBZkACZXyxfqSQNhprFfy/GHDt93cvYZDsXyGrG/1jzBb2skst6BUsEa4OWWwVx3WEYz6iVTsfh/ospVifwm8pqNplITLnUpgrVM2IzCxSfU0V5X+17IxBZruWkiE6fTN7Fu+e1BlFCXTg92FMQqYOywAyDEwh3Sf063bhIfrl7bnwdW5QSafeg9b8+aUz8QqhsUH+UNMSkIdbzo2qpgGlNvSnoFpjzb9mt27DHLM1+CperH5nL3JDJAlVrtKTNM1XKwLD9Jvo/EtLEiw3tLI431YXmvdq4B02kY26NHeYpRsTQTmyVJ62XknKbpaVIDWdDea9wcbVhVlW4fuQ6q0SWQRlel0XOusp2+LvmE+KTCqS4ADvlKk+kpK8uwaRjEgEG3EHqt92DYR7QjVa0vOqclduyuZXb2NE=
+
+ssh_pwauth: true
+disable_root: true
+package_update: false
+package_upgrade: false
+
+write_files:
+  - path: /etc/motd
+    content: |
+      ================================================
+        pi@pi-lab  （树莓派 1 B+ 实验台 / Raspberry Pi OS Lite）
+        · 登录方式：仅 SSH 公钥（本机 ~/.ssh/id_rsa）
+        · sudo 已免密，方便实验
+        · 想设密码：sudo passwd pi
+        · 想恢复 sudo 要密码：sudo rm /etc/sudoers.d/90-cloud-init-users
+      ================================================
+
+runcmd:
+  - [ systemctl, enable, --now, ssh ]
+  - [ sh, -c, "grep -q '^dtparam=i2c_arm=on' /boot/firmware/config.txt || echo 'dtparam=i2c_arm=on' >> /boot/firmware/config.txt" ]
+  - [ sh, -c, "grep -q '^enable_uart=1' /boot/firmware/config.txt || echo 'enable_uart=1' >> /boot/firmware/config.txt" ]

@@ -1,0 +1,8 @@
+# netplan 兼容配置，cloud-init 首启应用（之后不再覆盖）
+# Pi 1 B+ 只有有线网口 eth0，走 DHCP 从路由器拿地址
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: true
+      optional: false

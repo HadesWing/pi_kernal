@@ -1,0 +1,6 @@
+# This is the meta-data configuration file for cloud-init.
+# dsmode: local 必须保留 —— 表示"数据源在本机启动分区"，先于网络配置生效。
+dsmode: local
+
+instance_id: iid-pilab-20261026
+local-hostname: pi-lab
