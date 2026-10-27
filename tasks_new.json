@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. 编译 zImage（增量，2-4 分钟）",
+      "type": "shell",
+      "command": "time make -j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": { "base": "$gcc", "fileLocation": "relative" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "2. 编译全量（zImage + modules + dtbs）",
+      "type": "shell",
+      "command": "time make -j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": { "base": "$gcc", "fileLocation": "relative" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "3. 存档当前配置（savedefconfig）",
+      "type": "shell",
+      "command": "mkdir -p /mnt/d/rpi/kernel-defconfig && make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- savedefconfig && cp defconfig /mnt/d/rpi/kernel-defconfig/defconfig.$(date +%m%d-%H%M) && ls -l /mnt/d/rpi/kernel-defconfig/",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "4. 导出产物到 D 盘（供部署）",
+      "type": "shell",
+      "command": "mkdir -p /mnt/d/rpi/linux/out && cp arch/arm/boot/zImage /mnt/d/rpi/linux/out/kernel.img && make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/mnt/d/rpi/linux/out/modules modules_install && cp arch/arm/boot/dts/broadcom/bcm2708-rpi-b-plus.dtb /mnt/d/rpi/linux/out/ 2>/dev/null; ls -lh /mnt/d/rpi/linux/out/kernel.img && du -sh /mnt/d/rpi/linux/out/modules",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "5. 生成 compile_commands.json（clangd 索引用）",
+      "type": "shell",
+      "command": "make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- compile_commands.json || python3 scripts/clang-tools/gen_compile_commands.py -d . ; ls -lh compile_commands.json",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "6. 清理（谨慎，全量重编 15-25 分钟）",
+      "type": "shell",
+      "command": "make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- clean",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "7. 恢复基线配置（bcmrpi_defconfig）",
+      "type": "shell",
+      "command": "make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcmrpi_defconfig && echo 已恢复官方基线配置",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "8. 部署上板（上传+备份+重启+等上线）",
+      "type": "shell",
+      "command": "bash scripts/deploy-to-pi.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "9. 一键全链：编译→导出→部署上板",
+      "type": "shell",
+      "command": "echo 一键全链开始",
+      "dependsOn": [
+        "1. 编译 zImage（增量，2-4 分钟）",
+        "4. 导出产物到 D 盘（供部署）",
+        "8. 部署上板（上传+备份+重启+等上线）"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    }
+  ]
+}
